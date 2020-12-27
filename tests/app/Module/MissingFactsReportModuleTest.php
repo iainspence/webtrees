@@ -30,6 +30,7 @@ use Fisharebest\Webtrees\Services\UserService;
 use Fisharebest\Webtrees\TestCase;
 use League\Flysystem\Adapter\NullAdapter;
 use League\Flysystem\Filesystem;
+use League\Flysystem\InMemory\InMemoryFilesystemAdapter;
 
 /**
  * Test harness for the class MissingFactsReportModule
@@ -73,7 +74,7 @@ class MissingFactsReportModuleTest extends TestCase
      */
     public function testReportRunsWithoutError(): void
     {
-        $data_filesystem = new Filesystem(new NullAdapter());
+        $data_filesystem = new Filesystem(new InMemoryFilesystemAdapter());
         $module_service  = new ModuleService();
 
         $user = (new UserService())->create('user', 'User', 'user@example.com', 'secret');

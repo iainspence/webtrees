@@ -22,6 +22,9 @@ namespace Fisharebest\Webtrees\Http\RequestHandlers;
 use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Registry;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\UnableToDeleteDirectory;
+use League\Flysystem\UnableToDeleteFile;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -49,7 +52,7 @@ class DeletePath implements RequestHandlerInterface
         $path = $request->getQueryParams()['path'];
         assert(is_string($path));
 
-        if ($data_filesystem->has($path)) {
+        if ($data_filesystem->fileExists($path)) {
             $metadata = $data_filesystem->getMetadata($path);
 
             switch ($metadata['type']) {
@@ -57,16 +60,16 @@ class DeletePath implements RequestHandlerInterface
                     try {
                         $data_filesystem->delete($path);
                         FlashMessages::addMessage(I18N::translate('The file %s has been deleted.', e($path)), 'success');
-                    } catch (Throwable $ex) {
+                    } catch (FilesystemException | UnableToDeleteFile $ex) {
                         FlashMessages::addMessage(I18N::translate('The file %s could not be deleted.', e($path)), 'danger');
                     }
                     break;
 
                 case 'dir':
                     try {
-                        $data_filesystem->deleteDir($path);
+                        $data_filesystem->deleteDirectory($path);
                         FlashMessages::addMessage(I18N::translate('The folder %s has been deleted.', e($path)), 'success');
-                    } catch (Throwable $ex) {
+                    } catch (FilesystemException | UnableToDeleteDirectory $ex) {
                         FlashMessages::addMessage(I18N::translate('The folder %s could not be deleted.', e($path)), 'danger');
                     }
                     break;

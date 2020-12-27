@@ -33,7 +33,7 @@ use Fisharebest\Webtrees\Webtrees;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Support\Collection;
 use League\Flysystem\Filesystem;
-use League\Flysystem\FilesystemInterface;
+use League\Flysystem\FilesystemOperator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
@@ -258,14 +258,14 @@ class UpgradeController extends AbstractAdminController
     /**
      * Make sure the temporary folder exists.
      *
-     * @param FilesystemInterface $root_filesystem
+     * @param FilesystemOperator $root_filesystem
      *
      * @return ResponseInterface
      */
-    private function wizardStepPrepare(FilesystemInterface $root_filesystem): ResponseInterface
+    private function wizardStepPrepare(FilesystemOperator $root_filesystem): ResponseInterface
     {
-        $root_filesystem->deleteDir(self::UPGRADE_FOLDER);
-        $root_filesystem->createDir(self::UPGRADE_FOLDER);
+        $root_filesystem->deleteDirectory(self::UPGRADE_FOLDER);
+        $root_filesystem->createDirectory(self::UPGRADE_FOLDER);
 
         return response(view('components/alert-success', [
             'alert' => I18N::translate('The folder %s has been created.', e(self::UPGRADE_FOLDER)),
@@ -289,12 +289,12 @@ class UpgradeController extends AbstractAdminController
     }
 
     /**
-     * @param Tree                $tree
-     * @param FilesystemInterface $data_filesystem
+     * @param Tree               $tree
+     * @param FilesystemOperator $data_filesystem
      *
      * @return ResponseInterface
      */
-    private function wizardStepExport(Tree $tree, FilesystemInterface $data_filesystem): ResponseInterface
+    private function wizardStepExport(Tree $tree, FilesystemOperator $data_filesystem): ResponseInterface
     {
         // We store the data in PHP temporary storage.
         $stream = fopen('php://temp', 'wb+');
@@ -308,7 +308,7 @@ class UpgradeController extends AbstractAdminController
         $this->gedcom_export_service->export($tree, $stream);
 
         fseek($stream, 0);
-        $data_filesystem->putStream($tree->name() . date('-Y-m-d') . '.ged', $stream);
+        $data_filesystem->writeStream($tree->name() . date('-Y-m-d') . '.ged', $stream);
         fclose($stream);
 
         return response(view('components/alert-success', [
@@ -317,11 +317,11 @@ class UpgradeController extends AbstractAdminController
     }
 
     /**
-     * @param FilesystemInterface $root_filesystem
+     * @param FilesystemOperator $root_filesystem
      *
      * @return ResponseInterface
      */
-    private function wizardStepDownload(FilesystemInterface $root_filesystem): ResponseInterface
+    private function wizardStepDownload(FilesystemOperator $root_filesystem): ResponseInterface
     {
         $start_time   = microtime(true);
         $download_url = $this->upgrade_service->downloadUrl();
@@ -366,16 +366,16 @@ class UpgradeController extends AbstractAdminController
     }
 
     /**
-     * @param string              $zip_file
-     * @param FilesystemInterface $root_filesystem
-     * @param FilesystemInterface $temporary_filesystem
+     * @param string             $zip_file
+     * @param FilesystemOperator $root_filesystem
+     * @param FilesystemOperator $temporary_filesystem
      *
      * @return ResponseInterface
      */
     private function wizardStepCopyAndCleanUp(
         string $zip_file,
-        FilesystemInterface $root_filesystem,
-        FilesystemInterface $temporary_filesystem
+        FilesystemOperator $root_filesystem,
+        FilesystemOperator $temporary_filesystem
     ): ResponseInterface {
         $source_filesystem = new Filesystem(new ChrootAdapter($temporary_filesystem, self::ZIP_FILE_PREFIX));
 

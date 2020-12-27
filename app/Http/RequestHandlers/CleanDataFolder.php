@@ -87,7 +87,7 @@ class CleanDataFolder implements RequestHandlerInterface
             }
 
             return $content['path'];
-        }, $data_filesystem->listContents());
+        }, $data_filesystem->listContents(''));
 
         return $this->viewResponse('admin/clean-data', [
             'title'     => I18N::translate('Clean up data folder'),

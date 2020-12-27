@@ -24,7 +24,7 @@ use Fisharebest\Webtrees\Http\RequestHandlers\MediaFileThumbnail;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
-use League\Flysystem\FilesystemInterface;
+use League\Flysystem\FilesystemOperator;
 
 use function bin2hex;
 use function getimagesize;
@@ -305,11 +305,11 @@ class MediaFile
     /**
      * A list of image attributes
      *
-     * @param FilesystemInterface $data_filesystem
+     * @param FilesystemOperator $data_filesystem
      *
      * @return string[]
      */
-    public function attributes(FilesystemInterface $data_filesystem): array
+    public function attributes(FilesystemOperator $data_filesystem): array
     {
         $attributes = [];
 
@@ -341,11 +341,11 @@ class MediaFile
     /**
      * Read the contents of a media file.
      *
-     * @param FilesystemInterface $data_filesystem
+     * @param FilesystemOperator $data_filesystem
      *
      * @return string
      */
-    public function fileContents(FilesystemInterface $data_filesystem): string
+    public function fileContents(FilesystemOperator $data_filesystem): string
     {
         return $this->media->tree()->mediaFilesystem($data_filesystem)->read($this->multimedia_file_refn);
     }
@@ -353,13 +353,13 @@ class MediaFile
     /**
      * Check if the file exists on this server
      *
-     * @param FilesystemInterface $data_filesystem
+     * @param FilesystemOperator $data_filesystem
      *
      * @return bool
      */
-    public function fileExists(FilesystemInterface $data_filesystem): bool
+    public function fileExists(FilesystemOperator $data_filesystem): bool
     {
-        return $this->media->tree()->mediaFilesystem($data_filesystem)->has($this->multimedia_file_refn);
+        return $this->media->tree()->mediaFilesystem($data_filesystem)->fileExists($this->multimedia_file_refn);
     }
 
     /**
